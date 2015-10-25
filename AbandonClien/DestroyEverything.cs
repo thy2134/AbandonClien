@@ -15,7 +15,7 @@ namespace AbandonClien
         protected static List<ArticleInfo> Articles;
         protected static List<CommentInfo> Comments;
 
-        string Board;
+        public string Board;
         protected Random Rand;
         protected List<string> RandomMessages;
         public DestroyEverything(Clien clien)
@@ -28,6 +28,7 @@ namespace AbandonClien
             Rand = new Random();
 
             Board = Clien.Board;
+
             RandomMessages = new List<string>();
             RandomMessages.Add("-");
             RandomMessages.Add("삭제");

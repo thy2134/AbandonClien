@@ -40,9 +40,10 @@ namespace AbandonClien
 
             var validData = new Dictionary<string, string>();
             validData.Add("bo_table", Board);
-
+            //로그인 체크
             string response = await Broker.FetchPage("https://www.clien.net/cs2/bbs/login_check.php", postData, HttpBroker.Method.Post);
 
+            //보드 코드 유효성 체크
             string res = await Broker.FetchPage("http://www.clien.net/cs2/bbs/board.php", validData);
 
             // 로그인 성공시 nowlogin=1로 기존페이지로 이동하게 한다 
@@ -50,6 +51,8 @@ namespace AbandonClien
             {
                 var html = new HtmlDocument();
                 html.LoadHtml(res);
+                //입력된 보드로 이동시 게시판이 존재하는지 체크
+
                 if (html.ToString().Contains("존재하지 않는 게시판입니다")) return false;
 
                 else return true;

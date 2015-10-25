@@ -45,7 +45,7 @@ namespace AbandonClien
                 var isValid = clien.isValid();
                 isValid.Wait();
 
-            
+            //로그인 및 보드 코드 유효성 체크 
             if (isValid.Result == false)
                 {
                     Console.WriteLine("로그인 실패. 아이디, 암호 혹은 게시판 코드를 다시 확인하세요. ");
