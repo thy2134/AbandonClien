@@ -99,7 +99,7 @@ namespace AbandonClien
 
                 // page링크가 아닌경우 - 게시물 링크
                 // ../bbs/board.php?bo_table=park&wr_id=31130081
-                if (hrefQuery["page"] == null)
+                if (hrefQuery["page"] == null && hrefQuery["bo_table"] == "park")
                 {
                     articles.Add(new ArticleInfo()
                     {

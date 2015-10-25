@@ -19,7 +19,11 @@ namespace AbandonClien
                 string id;
                 string pw;
 
-                Console.Write("클리앙 아이디: ");
+                Console.Write("면책 조항 : 이 툴은 구글 검색을 이용하여 모두의 공원 게시판에서의 댓글을 찾아 삭제합니다. \n");
+                Console.Write(" 이 과정에서 구글 검색엔진의 실수로 인하여 간혹 다른 게시판의 댓글이 사라질 수 있으며, 이에 대해 본 제작자는 책임을 지지 않습니다. \n");
+                Console.Write("이 프로그램에서 최종 확인 질문 따위는 없습니다. 취소하고 싶으시면 검색 과정에서 Ctrl+C를 누르거나 그냥 창을 끄세요. \n");
+
+                Console.Write("\n 클리앙 아이디: ");
                 id = Console.ReadLine();
 
                 Console.Write("클리앙 암호: ");

@@ -44,7 +44,7 @@ namespace AbandonClien
                         
 
             int totalArticle = articles.Count + searchArticles.Count;
-            Console.WriteLine("총 {0}개의 게시물에서 댓글을 검색합니다.", totalArticle);
+            Console.WriteLine("총 {0}개의 모두의 공원 게시물에서 댓글을 검색합니다.", totalArticle);
 
             List<Task> tasks = new List<Task>();
             var commentBag = new ConcurrentBag<CommentInfo>();
@@ -112,12 +112,12 @@ namespace AbandonClien
             StringBuilder sb = new StringBuilder();
             sb.Append('"');
             sb.Append(await Clien.GetMyNickname());
-            sb.Append("님\" site:clien.net");
+            sb.Append("님\" 모두의공원 site:clien.net");
 
             List<ArticleInfo> searchArticles = new List<ArticleInfo>();
 
             string keyword = sb.ToString();
-            Console.WriteLine("구글에서 {0} 로 검색하여 내가 쓴 댓글이 있는 글도 수집합니다.", keyword);
+            Console.WriteLine("구글에서 {0} 로 검색하여 모두의 공원에 내가 쓴 댓글이 있는 글도 수집합니다.", keyword);
 
             GoogleSearch search = new GoogleSearch(keyword, 100);
             while (true)
@@ -134,25 +134,26 @@ namespace AbandonClien
                         var proxyUrl = HttpUtility.ParseQueryString(HttpUtility.HtmlDecode(result.Url.Substring(4)));
                         var realUrl = HttpUtility.HtmlDecode(proxyUrl["q"]);
 
-                        // 게시판 URL일때만 큐에 넣어둔다.
-                        if (realUrl.IndexOf("board.php") >= 0)
-                        {
-                            int queryIndex = realUrl.IndexOf('?');
-                            var queryString = HttpUtility.ParseQueryString(realUrl.Substring(queryIndex + 1));
+                        int queryIndex = realUrl.IndexOf('?');
+                        var queryString = HttpUtility.ParseQueryString(realUrl.Substring(queryIndex + 1));
 
-                            var foundArticle = new ArticleInfo()
-                            {
-                                Subject = result.Title,
-                                ID = long.Parse(queryString["wr_id"]),
-                                Table = queryString["bo_table"]
-                            };
+                        // 게시판 URL일때만 큐에 넣어둔다.
+                        if (realUrl.IndexOf("board.php") >= 0 && queryString["bo_table"] == "park")
+                        {
+
+                                var foundArticle = new ArticleInfo()
+                                {
+                                    Subject = result.Title,
+                                    ID = long.Parse(queryString["wr_id"]),
+                                    Table = queryString["bo_table"]
+                                };
 
                             // 담겨진 요소를 캐시해서 배열에서 요소를 다시 찾아보는낭비를 줄여야하지만
                             // 이 프로그램은 이정도 성능 이슈는 상관없으므로 무시하자.
                             if (myArticles.Where(x => (x.ID == foundArticle.ID && x.Table.Equals(foundArticle.Table))).Count() == 0)
                             {
                                 searchArticles.Add(foundArticle);
-                                //Console.WriteLine("[구굴링 결과] {0}" + foundArticle.Subject); 
+                                //Console.WriteLine("[구글링 결과] {0}" + foundArticle.Subject); 
                             }
                         }
                     }
@@ -174,24 +175,19 @@ namespace AbandonClien
 
         public bool Describe()
         {
-            Console.WriteLine("총 {0}개의 게시물에서 {1}개의 댓글을 찾았습니다.", Articles.Count, Comments.Count);
-            Console.WriteLine("한번 삭제하면 복구가 불가능합니다. 삭제하시려면 Y를 누르세요.");
+            Console.WriteLine("총 {0}개의 모두의 공원 게시물에서 {1}개의 댓글을 찾았습니다.", Articles.Count, Comments.Count);
+            Console.WriteLine("한번 삭제하면 복구가 불가능합니다. 취소하시려면 지금 Ctrl+C 키를 누르세요.");
 #if WITHOUT_ARTICLE
             Console.WriteLine("게시물은 삭제하지 않고 댓글만 삭제합니다.");
 #else
             Console.WriteLine("게시물과 댓글이 모두 삭제됩니다.");
 #endif
-            Console.Write("정말 삭제하시겠습니까? ");
 
-            var keyInfo = Console.ReadKey();
-            Console.Write("\n");
-
-            if (keyInfo.KeyChar.ToString().ToUpper().Equals("Y"))
+            if (true)
             {
                 return true;
             }
 
-            return false;
         }
 
         protected string GetRandomMessage()
