@@ -1,4 +1,4 @@
-﻿using HtmlAgilityPack;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,31 +21,45 @@ namespace AbandonClien
         protected string Username { get; set; }
         protected string Password { get; set; }
 
-        public Clien(string username, string password)
+        public string Board;
+        public Clien(string username, string password, string board)
         {
             Broker = new HttpBroker();
 
             Username = username;
             Password = password;
+
+            Board = board; 
         }
 
-        public async Task<bool> Login()
+        public async Task<bool> isValid()
         {
             var postData = new Dictionary<string, string>();
             postData.Add("mb_id", Username);
             postData.Add("mb_password", Password);
 
+            var validData = new Dictionary<string, string>();
+            validData.Add("bo_table", Board);
+
             string response = await Broker.FetchPage("https://www.clien.net/cs2/bbs/login_check.php", postData, HttpBroker.Method.Post);
+
+            string res = await Broker.FetchPage("http://www.clien.net/cs2/bbs/board.php", validData);
+
             // 로그인 성공시 nowlogin=1로 기존페이지로 이동하게 한다 
             if (response.IndexOf("nowlogin=1") >= 0)
             {
-                return true;
+                var html = new HtmlDocument();
+                html.LoadHtml(res);
+                if (html.ToString().Contains("존재하지 않는 게시판입니다")) return false;
+
+                else return true;
             }
             else
             {
                 return false;
             }
         }
+        
 
         public async Task<string> GetMyNickname()
         {
@@ -99,12 +113,12 @@ namespace AbandonClien
 
                 // page링크가 아닌경우 - 게시물 링크
                 // ../bbs/board.php?bo_table=park&wr_id=31130081
-                if (hrefQuery["page"] == null && hrefQuery["bo_table"] == "park")
+                if (hrefQuery["page"] == null && hrefQuery["bo_table"] == Board)
                 {
                     articles.Add(new ArticleInfo()
                     {
                         ID = long.Parse(hrefQuery["wr_id"]),
-                        Table = hrefQuery["bo_table"],
+                        Table = Board,
                         Subject = node.InnerText
                     });
                 }

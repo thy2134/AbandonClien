@@ -15,6 +15,7 @@ namespace AbandonClien
         protected static List<ArticleInfo> Articles;
         protected static List<CommentInfo> Comments;
 
+        string Board;
         protected Random Rand;
         protected List<string> RandomMessages;
         public DestroyEverything(Clien clien)
@@ -26,6 +27,7 @@ namespace AbandonClien
 
             Rand = new Random();
 
+            Board = Clien.Board;
             RandomMessages = new List<string>();
             RandomMessages.Add("-");
             RandomMessages.Add("삭제");
@@ -44,7 +46,7 @@ namespace AbandonClien
                         
 
             int totalArticle = articles.Count + searchArticles.Count;
-            Console.WriteLine("총 {0}개의 모두의 공원 게시물에서 댓글을 검색합니다.", totalArticle);
+            Console.WriteLine("총 {0}개의 해당 게시판 게시물에서 댓글을 검색합니다.", totalArticle);
 
             List<Task> tasks = new List<Task>();
             var commentBag = new ConcurrentBag<CommentInfo>();
@@ -112,12 +114,12 @@ namespace AbandonClien
             StringBuilder sb = new StringBuilder();
             sb.Append('"');
             sb.Append(await Clien.GetMyNickname());
-            sb.Append("님\" 모두의공원 site:clien.net");
+            sb.Append("님\" " + Board + "site:clien.net");
 
             List<ArticleInfo> searchArticles = new List<ArticleInfo>();
 
             string keyword = sb.ToString();
-            Console.WriteLine("구글에서 {0} 로 검색하여 모두의 공원에 내가 쓴 댓글이 있는 글도 수집합니다.", keyword);
+            Console.WriteLine("구글에서 {0} 로 검색하여 해당 게시판에에 내가 쓴 댓글이 있는 글도 수집합니다.", keyword);
 
             GoogleSearch search = new GoogleSearch(keyword, 100);
             while (true)
@@ -138,15 +140,15 @@ namespace AbandonClien
                         var queryString = HttpUtility.ParseQueryString(realUrl.Substring(queryIndex + 1));
 
                         // 게시판 URL일때만 큐에 넣어둔다.
-                        if (realUrl.IndexOf("board.php") >= 0 && queryString["bo_table"] == "park")
+                        if (realUrl.IndexOf("board.php") >= 0 && queryString["bo_table"] == Board)
                         {
 
-                                var foundArticle = new ArticleInfo()
-                                {
-                                    Subject = result.Title,
-                                    ID = long.Parse(queryString["wr_id"]),
-                                    Table = queryString["bo_table"]
-                                };
+	                            var foundArticle = new ArticleInfo()
+	                            {
+	                                Subject = result.Title,
+	                                ID = long.Parse(queryString["wr_id"]),
+	                                Table = queryString["bo_table"]
+	                            };
 
                             // 담겨진 요소를 캐시해서 배열에서 요소를 다시 찾아보는낭비를 줄여야하지만
                             // 이 프로그램은 이정도 성능 이슈는 상관없으므로 무시하자.
@@ -175,7 +177,7 @@ namespace AbandonClien
 
         public bool Describe()
         {
-            Console.WriteLine("총 {0}개의 모두의 공원 게시물에서 {1}개의 댓글을 찾았습니다.", Articles.Count, Comments.Count);
+            Console.WriteLine("총 {0}개의 해당 게시판 게시물에서 {1}개의 댓글을 찾았습니다.", Articles.Count, Comments.Count);
             Console.WriteLine("한번 삭제하면 복구가 불가능합니다. 취소하시려면 지금 Ctrl+C 키를 누르세요.");
 #if WITHOUT_ARTICLE
             Console.WriteLine("게시물은 삭제하지 않고 댓글만 삭제합니다.");
