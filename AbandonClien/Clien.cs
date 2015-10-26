@@ -43,22 +43,20 @@ namespace AbandonClien
             //로그인 체크
             string response = await Broker.FetchPage("https://www.clien.net/cs2/bbs/login_check.php", postData, HttpBroker.Method.Post);
 
-            //보드 코드 유효성 체크
-            string res = await Broker.FetchPage("http://www.clien.net/cs2/bbs/board.php", validData);
 
             // 로그인 성공시 nowlogin=1로 기존페이지로 이동하게 한다 
-            if (response.IndexOf("nowlogin=1") >= 0)
-            {
+            if (response.IndexOf("nowlogin=1") >= 0) {
+                //보드 코드 유효성 체크
+                string res = await Broker.FetchPage("http://www.clien.net/cs2/bbs/board.php", validData);
+
                 var html = new HtmlDocument();
                 html.LoadHtml(res);
-                //입력된 보드로 이동시 게시판이 존재하는지 체크
 
-                if (html.ToString().Contains("존재하지 않는 게시판입니다")) return false;
+                //입력된 보드로 이동시 게시판이 존재하는지 체크
+                if (html.DocumentNode.OuterHtml.Contains("존재하지 않는 게시판입니다")) return false;
 
                 else return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
@@ -99,54 +97,61 @@ namespace AbandonClien
             int lastPage = 1;
 
             // 모든 글 선택
-            foreach (var node in document.QuerySelectorAll(".board_main td a"))
-            {
-                var hrefAttr = node.Attributes["href"];
-
-
-                int queryIndex = hrefAttr.Value.IndexOf("?");
-
-                // ?? 예상하지 못한 링크. 여기에는 게시판 주소 링크와 페이지 링크만 와야함
-                if (queryIndex == -1)
+       
+                foreach (var node in document.QuerySelectorAll(".board_main td a"))
                 {
-                    continue;
-                }
+                    var hrefAttr = node.Attributes["href"];
 
-                var hrefQuery = HttpUtility.ParseQueryString(hrefAttr.Value.Substring(queryIndex + 1));
 
-                // page링크가 아닌경우 - 게시물 링크
-                // ../bbs/board.php?bo_table=park&wr_id=31130081
-                if (hrefQuery["page"] == null && hrefQuery["bo_table"] == Board)
-                {
-                    articles.Add(new ArticleInfo()
+                    int queryIndex = hrefAttr.Value.IndexOf("?");
+
+                    // ?? 예상하지 못한 링크. 여기에는 게시판 주소 링크와 페이지 링크만 와야함
+                    if (queryIndex == -1)
                     {
-                        ID = long.Parse(hrefQuery["wr_id"]),
-                        Table = Board,
-                        Subject = node.InnerText
-                    });
-                }
-                else // 페이지 번호 ?&page=3
-                {
-                    // 첫페이지일 경우만 페이지를 파싱하게 한다.
-                    if (page == 1)
-                    {
-                        // 논리적으로 계속 덮어쓰지만. 마지막 페이지 번호가 글 순서상 제일 마지막이기떄문에
-                        // 최종 결과가 된다.
-                        lastPage = int.Parse(hrefQuery["page"]);
+                        continue;
                     }
+
+                    var hrefQuery = HttpUtility.ParseQueryString(hrefAttr.Value.Substring(queryIndex + 1));
+
+                    // page링크가 아닌경우 - 게시물 링크
+                    // ../bbs/board.php?bo_table=park&wr_id=31130081
+                    if (hrefQuery["page"] == null && hrefQuery["bo_table"] == Board)
+                    {
+                        articles.Add(new ArticleInfo()
+                        {
+                            ID = long.Parse(hrefQuery["wr_id"]),
+                            Table = Board,
+                            Subject = node.InnerText
+                        });
+                    }
+                    else if(hrefQuery["page"] == null)
+                    {
+                       break;
+                    } else {  // 페이지 번호 ?&page=3
+                        // 첫페이지일 경우만 페이지를 파싱하게 한다.
+
+                        if (page == 1) {
+                            // 논리적으로 계속 덮어쓰지만. 마지막 페이지 번호가 글 순서상 제일 마지막이기떄문에
+                            // 최종 결과가 된다.
+                            lastPage = int.Parse(hrefQuery["page"]);
+                        }
+                    }
+
                 }
 
-            }
+                for (int i = 2; i <= lastPage; i++)
+                {
+                    // 혹시모르니 각각 요청사이에 잠깐 쉰다.
+                    await Task.Delay(1000);
 
-            for (int i = 2; i <= lastPage; i++)
-            {
-                // 혹시모르니 각각 요청사이에 잠깐 쉰다.
-                await Task.Delay(1000);
+                    articles.AddRange(await GetMyArticles(i));
+                }
+                return articles;
+           
+            
 
-                articles.AddRange(await GetMyArticles(i));
-            }
+            
 
-            return articles;
         }
 
         public async Task<List<CommentInfo>> GetMyCommentsInArticle(ArticleInfo article, int comment_page = 1)

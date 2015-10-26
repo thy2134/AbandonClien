@@ -38,7 +38,7 @@ namespace AbandonClien
                 Console.Write("클리앙 암호: ");
                 pw = Console.ReadLine();
 
-                Console.WriteLine("삭제할 게시판의 코드를 입력하세요. 코드는 http://pastebin.com/Enu0wYDK 에서 확인 가능합니다 : ");
+                Console.WriteLine("삭제할 게시판의 코드를 입력하세요. 코드는 http://pastebin.com/Enu0wYDK 에서 확인 가능합니다 :");
                 board = Console.ReadLine();
 
                 clien = new Clien(id, pw, board);
@@ -48,15 +48,15 @@ namespace AbandonClien
             //로그인 및 보드 코드 유효성 체크 
             if (isValid.Result == false)
                 {
-                    Console.WriteLine("로그인 실패. 아이디, 암호 혹은 게시판 코드를 다시 확인하세요. ");
+                    Console.WriteLine("접속 실패. 아이디, 암호 혹은 게시판 코드를 다시 확인하세요. ");
                 } else
                 {
                     
                     Console.WriteLine("게시판 확인 성공. 글 검색을 시작합니다. ");
                     var de = new DestroyEverything(clien);
                     de.Collect().Wait();
-
-                    if (de.Describe() == true)
+                    
+                if (de.Describe() == true)
                     {
                         de.Destroy().Wait();
 

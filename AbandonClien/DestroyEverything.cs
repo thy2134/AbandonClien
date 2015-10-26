@@ -115,7 +115,7 @@ namespace AbandonClien
             StringBuilder sb = new StringBuilder();
             sb.Append('"');
             sb.Append(await Clien.GetMyNickname());
-            sb.Append("님\" " + Board + "site:clien.net");
+            sb.Append("님\" " + Board + " site:clien.net");
 
             List<ArticleInfo> searchArticles = new List<ArticleInfo>();
 
